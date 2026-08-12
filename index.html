@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RTB 客户管理链路 · 业务流程图</title>
+  <style>
+    :root {
+      --text-primary: #1a1a1a;
+      --text-secondary: #60656f;
+      --text-tertiary: #929292;
+      --text-quaternary: #b8b8b8;
+      --surface: #ffffff;
+      --surface-muted: #f7f7f7;
+      --surface-raised: #f0f0f0;
+      --surface-strong: #e8e8e8;
+      --border: #d7d7d5;
+      --accent-blue: #2563eb;
+      --accent-red: #dc2626;
+      --accent-green: #16a34a;
+      --accent-purple: #7c3aed;
+      --accent-orange: #ea580c;
+      --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--surface-muted);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 24px 16px;
+      min-height: 100vh;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 28px; }
+    .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+    .header p { font-size: 14px; color: var(--text-secondary); }
+    .flow-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .flow-tabs::-webkit-scrollbar { display: none; }
+    .flow-tab {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .flow-tab:hover { background: var(--surface-raised); color: var(--text-primary); }
+    .flow-tab.active { background: var(--text-primary); color: #fff; }
+    .flow-panel { display: none; animation: fadeIn 0.3s ease; }
+    .flow-panel.active { display: block; }
+    .scene-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 4px 0 18px;
+      padding: 5px;
+      overflow-x: auto;
+      border-radius: 10px;
+      background: var(--surface-raised);
+      scrollbar-width: none;
+    }
+    .scene-tabs::-webkit-scrollbar { display: none; }
+    .scene-tab {
+      flex: 1 0 auto;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .scene-tab.active {
+      background: var(--surface);
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .scene-tab-panel { display: none; animation: fadeIn 0.25s ease; }
+    .scene-tab-panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .flow-stage {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .stage-pill {
+      flex: 0 0 auto;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .stage-pill.active { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+    .stage-arrow { flex: 0 0 auto; color: var(--text-quaternary); font-size: 14px; font-weight: 500; }
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .flow-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      background: var(--surface);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .flow-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); transform: translateY(-1px); }
+    .flow-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .flow-card-body { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+    .flow-card-body ul { margin: 0; padding-left: 18px; }
+    .flow-card-body li { margin-bottom: 5px; }
+    .flow-card-body strong { color: var(--text-primary); font-weight: 500; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 4px;
+      letter-spacing: 0.2px;
+    }
+    .badge-blue { background: #eff6ff; color: var(--accent-blue); }
+    .badge-red { background: #fef2f2; color: var(--accent-red); }
+    .badge-green { background: #f0fdf4; color: var(--accent-green); }
+    .badge-purple { background: #f5f3ff; color: var(--accent-purple); }
+    .badge-orange { background: #fff7ed; color: var(--accent-orange); }
+    .badge-gray { background: var(--surface-muted); color: var(--text-secondary); }
+    .flow-step { display: flex; gap: 14px; margin-bottom: 14px; }
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content { flex: 1; }
+    .step-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+    .step-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+    .step-line { width: 1.5px; height: 18px; background: var(--border); margin-left: 12px; margin-bottom: 4px; }
+    .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .split-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      background: var(--surface);
+    }
+    .split-header {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .appointment-gallery {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .appointment-gallery-title {
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .appointment-shots {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .appointment-shots.is-four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .appointment-shots.is-four .appointment-shot:not(:last-child)::after { right: -11px; }
+    .appointment-shot {
+      position: relative;
+      min-width: 0;
+    }
+    .appointment-shot:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 46%;
+      right: -14px;
+      color: var(--text-quaternary);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .appointment-shot a {
+      display: block;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-muted);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .appointment-shot a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+    .appointment-shot img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1280 / 2781;
+      object-fit: cover;
+      object-position: top;
+    }
+    .appointment-shot-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .appointment-shot-label span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--text-primary);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .capability-status {
+      margin: 0 0 20px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+    .capability-status-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .capability-status-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .capability-status-badge {
+      flex: 0 0 auto;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #f0fdf4;
+      color: var(--accent-green);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .capability-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px 14px;
+      margin-bottom: 16px;
+    }
+    .capability-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .capability-check { color: var(--accent-green); font-weight: 700; }
+    .capability-gap {
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent-orange);
+      border-radius: 8px;
+      background: #fff7ed;
+    }
+    .capability-gap-title {
+      margin-bottom: 5px;
+      color: var(--accent-orange);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .capability-gap-text {
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .member-capability-status .capability-status-badge {
+      background: #f5f3ff;
+      color: var(--accent-purple);
+    }
+    .member-status-summary {
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+    .member-capability-status .capability-gap {
+      margin-bottom: 16px;
+      border-left-color: var(--accent-purple);
+      background: #f5f3ff;
+    }
+    .member-capability-status .capability-gap-title { color: var(--accent-purple); }
+    .marketing-capability-status .capability-status-badge {
+      background: #eff6ff;
+      color: var(--accent-blue);
+    }
+    .marketing-priority-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.6fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .marketing-priority {
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-muted);
+    }
+    .marketing-priority-title {
+      margin-bottom: 7px;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .marketing-priority-text {
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .marketing-priority strong { color: var(--accent-red); font-weight: 600; }
+    .marketing-question-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 12px;
+    }
+    .marketing-question {
+      padding: 10px 12px;
+      border-radius: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .marketing-question b { display: block; margin-bottom: 3px; color: var(--text-primary); }
+    .marketing-next {
+      padding: 12px 14px;
+      border-left: 3px solid var(--accent-blue);
+      border-radius: 8px;
+      background: #eff6ff;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .marketing-next b { color: var(--accent-blue); }
+    .structured-log-title {
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .structured-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+    .structured-field {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-muted);
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .operation-scenarios {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .operation-scenario {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+    .operation-scenario-head {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 5px;
+    }
+    .operation-scenario-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--text-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .operation-scenario-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .operation-scenario-desc {
+      min-height: 38px;
+      margin: 0 0 12px 33px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .operation-shots {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .operation-shots.is-three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .operation-shot { position: relative; min-width: 0; }
+    .operation-shot:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 43%;
+      right: -11px;
+      z-index: 1;
+      color: var(--text-quaternary);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .operation-shot a {
+      display: block;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-muted);
+    }
+    .operation-shot img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1280 / 2781;
+      object-fit: cover;
+      object-position: top;
+    }
+    .operation-shot-label {
+      margin-top: 7px;
+      color: var(--text-secondary);
+      font-size: 10px;
+      line-height: 1.4;
+      text-align: center;
+    }
+    .tool-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .tool-card {
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .tool-card h4 { margin: 0 0 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .tool-card p { margin: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 24px 0 14px;
+      color: var(--text-primary);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title:first-of-type { margin-top: 0; }
+    .scene-timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+    .scene-timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--border);
+      border-radius: 1px;
+    }
+    .scene-node {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .scene-node::before {
+      content: "";
+      position: absolute;
+      left: -20px;
+      top: 5px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      border: 2px solid var(--surface);
+      box-shadow: 0 0 0 2px var(--border);
+    }
+    .scene-node.active::before { background: var(--accent-blue); box-shadow: 0 0 0 2px var(--accent-blue); }
+    .scene-node.complete::before { background: var(--accent-green); box-shadow: 0 0 0 2px var(--accent-green); }
+    .scene-node.warn::before { background: var(--accent-red); box-shadow: 0 0 0 2px var(--accent-red); }
+    .scene-node-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .scene-node-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .scene-node-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .scene-action {
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--surface-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .marketing-chain {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .chain-step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--surface-muted);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .chain-step .chain-icon {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .chain-arrow { color: var(--text-quaternary); font-size: 14px; font-weight: 600; }
+    @media (max-width: 720px) {
+      .split-view { grid-template-columns: 1fr; }
+      .flow-grid { grid-template-columns: 1fr; }
+      body { padding: 16px 12px; }
+      .header h1 { font-size: 18px; }
+      .marketing-chain { justify-content: flex-start; }
+      .appointment-shots { grid-template-columns: 1fr; gap: 14px; }
+      .appointment-shot:not(:last-child)::after { display: none; }
+      .appointment-shot img { aspect-ratio: auto; }
+      .capability-status-header { align-items: flex-start; flex-direction: column; }
+      .capability-list { grid-template-columns: 1fr; }
+      .operation-scenarios { grid-template-columns: 1fr; }
+      .marketing-priority-grid, .marketing-question-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>RTB 客户管理链路 · 业务流程图</h1>
+      <p>预约 → 到店 → 服务 → 结算 → 运营 → 复购</p>
+    </div>
+
+    <div class="flow-tabs">
+      <button class="flow-tab active" data-tab="overview">整体流程概览</button>
+      <button class="flow-tab" data-tab="appointment">客户预约流程</button>
+      <button class="flow-tab" data-tab="member">会员运营流程</button>
+      <button class="flow-tab" data-tab="marketing">精准营销</button>
+    </div>
+
+    <!-- ====== 整体流程概览 ====== -->
+    <div class="flow-panel active" data-panel="overview">
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:24px;overflow-x:auto;padding-bottom:6px;">
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--text-primary);color:#fff;font-size:12px;font-weight:600;white-space:nowrap;">① 预约</div>
+        <span style="color:var(--text-quaternary);font-size:12px;">→</span>
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--surface);color:var(--text-secondary);border:1px solid var(--border);font-size:12px;font-weight:500;white-space:nowrap;">② 顾客进店</div>
+        <span style="color:var(--text-quaternary);font-size:12px;">→</span>
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--surface);color:var(--text-secondary);border:1px solid var(--border);font-size:12px;font-weight:500;white-space:nowrap;">③ 沟通选项目</div>
+        <span style="color:var(--text-quaternary);font-size:12px;">→</span>
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--surface);color:var(--text-secondary);border:1px solid var(--border);font-size:12px;font-weight:500;white-space:nowrap;">④ 服务</div>
+        <span style="color:var(--text-quaternary);font-size:12px;">→</span>
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--surface);color:var(--text-secondary);border:1px solid var(--border);font-size:12px;font-weight:500;white-space:nowrap;">⑤ 店员开单</div>
+        <span style="color:var(--text-quaternary);font-size:12px;">→</span>
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--surface);color:var(--text-secondary);border:1px solid var(--border);font-size:12px;font-weight:500;white-space:nowrap;">⑥ 买单离店</div>
+        <span style="color:var(--text-quaternary);font-size:12px;">→</span>
+        <div style="flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--surface);color:var(--text-secondary);border:1px solid var(--border);font-size:12px;font-weight:500;white-space:nowrap;">⑦ 跟进售后</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;">
+        <div class="flow-card" style="border-left:4px solid var(--accent-blue);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">1</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">预约</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>客户预约：</strong>客户自助 / 门店代约</li>
+                <li><strong>门店配置：</strong>地址、营业时间、经营项目</li>
+                <li><strong>预约规则：</strong>时段、确认与取消规则</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--text-secondary);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--text-secondary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">2</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">顾客进店</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>预约管理：</strong>查看预约并标记到店状态</li>
+                <li><strong>客户识别：</strong>调取档案、偏好与服务记录</li>
+                <li><strong>到店提醒：</strong>自动发送到店提醒</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--accent-purple);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">3</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">沟通选择项目</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>项目管理：</strong>分类、价格与服务时长</li>
+                <li><strong>客户资产：</strong>卡余额、次数与优惠券</li>
+                <li><strong>顾问推荐：</strong>结合画像推荐项目</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--accent-green);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">4</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">服务执行</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>员工管理：</strong>档案、技能与服务权限</li>
+                <li><strong>排班管理：</strong>班次、占用与可约时间</li>
+                <li><strong>业绩提成：</strong>提成规则与业绩归属</li>
+                <li><strong>服务日志：</strong>按模板记录服务结果</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--accent-orange);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">5</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">店员开单</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>开单：</strong>选择项目、员工与价格</li>
+                <li><strong>办卡：</strong>储值卡、次卡与权益卡</li>
+                <li><strong>权益使用：</strong>抵券、扣余额或核销次数</li>
+                <li><strong>挂单：</strong>暂存未结算订单</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--text-primary);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--text-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">6</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">结算离店</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>订单结算：</strong>自助或店员收银</li>
+                <li><strong>业绩计算：</strong>记录流水并计算提成</li>
+                <li><strong>资产扣减：</strong>同步核销卡券权益</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--accent-red);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">7</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">跟进售后</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">业务场景</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">映射系统功能</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li><strong>会员运营：</strong>更新标签、日志与回访任务</li>
+                <li><strong>活动营销：</strong>卡券、短信与批量触达</li>
+                <li><strong>消息触达：</strong>确认、提醒、回访与召回</li>
+                <li><strong>客户画像：</strong>消费、偏好与流失预警</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flow-card" style="border-left:4px solid var(--accent-blue);background:linear-gradient(135deg,#eff6ff 0%,#fff 100%);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--accent-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">8</span>
+            <div>
+              <div style="font-size:15px;font-weight:600;color:var(--text-primary);">复购闭环 ↻</div>
+              <div style="font-size:12px;color:var(--text-tertiary);">回到第一步</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <div style="margin-bottom:8px;padding:10px;border-radius:8px;background:#fff;border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">闭环逻辑</div>
+              <ul style="margin:0;padding-left:16px;">
+                <li>营销触达或会员权益促成再次预约</li>
+                <li>回到预约环节，进入下一轮服务</li>
+                <li>形成「服务—沉淀—触达—复购」闭环</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ====== 客户预约流程 ====== -->
+    <div class="flow-panel" data-panel="appointment">
+      <div class="split-view">
+        <!-- C端自助预约 -->
+        <div class="split-card">
+          <div class="split-header">C端小程序 · 客户自助预约</div>
+          <div class="flow-step">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              <div class="step-title">进入店铺主页</div>
+                <div class="step-desc">浏览门店、项目与员工</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <div class="step-title">选择服务项目</div>
+                <div class="step-desc">选择项目，也可到店后确定</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <div class="step-title">选择到店日期与时间</div>
+                <div class="step-desc">选择可约日期与时段</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">4</span>
+            <div class="step-content">
+              <div class="step-title">选择手艺人</div>
+                <div class="step-desc">指定员工或到店分配</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">5</span>
+            <div class="step-content">
+              <div class="step-title">填写预约信息并提交</div>
+                <div class="step-desc">填写人数与备注后提交</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">6</span>
+            <div class="step-content">
+              <div class="step-title">客户按预约到店</div>
+                <div class="step-desc">客户按预约时间直接到店</div>
+            </div>
+          </div>
+          <div class="appointment-gallery">
+            <div class="appointment-gallery-title">小程序预约页面 · 流程示例</div>
+            <div class="appointment-shots">
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/01-entry.jpg" target="_blank" title="点击查看大图：进入预约">
+                  <img src="RTB业务流程图_精简优化版_assets/01-entry.jpg" alt="小程序首页预约入口" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>1</span>进入预约</div>
+              </div>
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/02-form.jpg" target="_blank" title="点击查看大图：填写预约">
+                  <img src="RTB业务流程图_精简优化版_assets/02-form.jpg" alt="填写预约项目、时间和服务人员" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>2</span>填写预约</div>
+              </div>
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/03-success.jpg" target="_blank" title="点击查看大图：预约完成">
+                  <img src="RTB业务流程图_精简优化版_assets/03-success.jpg" alt="预约成功详情页面" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>3</span>预约完成</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B端代客预约（含新客判断） -->
+        <div class="split-card">
+          <div class="split-header">B端门店 · 代客预约流程</div>
+          <div class="flow-step">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              <div class="step-title">客户来电 / 到店表达预约意向</div>
+              <div class="step-desc">电话预约或到店口头预约</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num" style="background:var(--accent-orange);">?</span>
+            <div class="step-content">
+              <div class="step-title">判断客户是否已建档</div>
+                <div class="step-desc">按手机号或姓名检索</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <div class="step-title">填写预约信息</div>
+                <div class="step-desc">填写时间、时长与人数</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <div class="step-title">添加预约项目与手艺人</div>
+                <div class="step-desc">添加项目并分配员工</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">4</span>
+            <div class="step-content">
+              <div class="step-title">填写商家备注并保存</div>
+                <div class="step-desc">补充偏好或到店说明并保存</div>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="flow-step">
+            <span class="step-num">5</span>
+            <div class="step-content">
+              <div class="step-title">预约管理跟进</div>
+                <div class="step-desc">查看、确认、取消或转开单</div>
+            </div>
+          </div>
+          <div class="appointment-gallery">
+            <div class="appointment-gallery-title">门店代客预约页面 · 流程示例</div>
+            <div class="appointment-shots is-four">
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/04-staff-list.jpg" target="_blank" title="点击查看大图：预约列表">
+                  <img src="RTB业务流程图_精简优化版_assets/04-staff-list.jpg" alt="门店预约列表" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>1</span>查看预约</div>
+              </div>
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/05-staff-create.jpg" target="_blank" title="点击查看大图：新增代客预约">
+                  <img src="RTB业务流程图_精简优化版_assets/05-staff-create.jpg" alt="新增门店代客预约" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>2</span>新增预约</div>
+              </div>
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/06-staff-detail.jpg" target="_blank" title="点击查看大图：预约详情与到店处理">
+                  <img src="RTB业务流程图_精简优化版_assets/06-staff-detail.jpg" alt="预约详情与到店处理" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>3</span>到店处理</div>
+              </div>
+              <div class="appointment-shot">
+                <a href="RTB业务流程图_精简优化版_assets/07-staff-board.jpg" target="_blank" title="点击查看大图：预约看板">
+                  <img src="RTB业务流程图_精简优化版_assets/07-staff-board.jpg" alt="门店预约看板" loading="eager">
+                </a>
+                <div class="appointment-shot-label"><span>4</span>预约看板</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="capability-status">
+        <div class="capability-status-header">
+          <div class="capability-status-title">预约能力现状</div>
+          <span class="capability-status-badge">主流程已闭环</span>
+        </div>
+        <div class="capability-list">
+          <div class="capability-item"><span class="capability-check">✓</span><span>排班与可约时段校验</span></div>
+          <div class="capability-item"><span class="capability-check">✓</span><span>客户自助与门店代约</span></div>
+          <div class="capability-item"><span class="capability-check">✓</span><span>取消、改期与到店提醒</span></div>
+          <div class="capability-item"><span class="capability-check">✓</span><span>到店、开单、结算联动</span></div>
+          <div class="capability-item"><span class="capability-check">✓</span><span>预约列表与资源看板</span></div>
+        </div>
+        <div class="capability-gap">
+          <div class="capability-gap-title">待补充：经营数据闭环</div>
+          <div class="capability-gap-text">系统不仅要“能预约”，还需要回答预约是否真正提升了经营效率。建议补充爽约记录、热门项目预约金与爽约规则，并沉淀客户爽约次数与履约数据。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 会员运营流程（场景流程） ====== -->
+    <div class="flow-panel" data-panel="member">
+      <div class="flow-stage">
+        <span class="stage-pill active">获客</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">建档</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">服务</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">留存</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">增值</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">召回</span>
+      </div>
+
+      <div class="scene-tabs" data-scene-tabs="member">
+        <button class="scene-tab active" data-scene-target="member-new">新客运营</button>
+        <button class="scene-tab" data-scene-target="member-existing">老客运营</button>
+        <button class="scene-tab" data-scene-target="member-assets">客户资产</button>
+      </div>
+
+      <div class="scene-tab-panel active" data-scene-panel="member-new">
+      <div class="section-title">场景一：新客户首次到店全链路</div>
+      <div class="scene-timeline">
+        <div class="scene-node active">
+          <div class="scene-node-title">客户首次到店 / 电话预约</div>
+          <div class="scene-node-desc">客户线上预约、电话预约或直接到店</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">小程序预约</span>
+            <span class="scene-action">电话预约</span>
+            <span class="scene-action">直接到店</span>
+          </div>
+        </div>
+        <div class="scene-node active">
+          <div class="scene-node-title">创建客户档案</div>
+          <div class="scene-node-desc">录入基础信息、来源、顾问与偏好</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">查重校验</span>
+            <span class="scene-action">分配顾问</span>
+            <span class="scene-action">记录渠道</span>
+          </div>
+        </div>
+        <div class="scene-node active">
+          <div class="scene-node-title">首次服务与开单</div>
+          <div class="scene-node-desc">选择项目与员工，开单并结算</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">开单记账</span>
+            <span class="scene-action">选择手艺人</span>
+            <span class="scene-action">订单结算</span>
+          </div>
+        </div>
+        <div class="scene-node active">
+          <div class="scene-node-title">记录服务日志 & 打标签</div>
+          <div class="scene-node-desc">记录服务详情并添加客户标签</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">美业模板</span>
+            <span class="scene-action">美容模板</span>
+            <span class="scene-action">美甲模板</span>
+            <span class="scene-action">添加标签</span>
+          </div>
+        </div>
+        <div class="scene-node complete">
+          <div class="scene-node-title">首次服务后回访提醒</div>
+          <div class="scene-node-desc">自动生成任务，顾问回访并记录反馈</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">自动提醒</span>
+            <span class="scene-action">顾问回访</span>
+            <span class="scene-action">反馈记录</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">新客运营 · 三个子场景</div>
+      <div class="operation-scenarios">
+        <div class="operation-scenario">
+          <div class="operation-scenario-head">
+            <span class="operation-scenario-num">1</span>
+            <div class="operation-scenario-title">新客建档</div>
+          </div>
+          <div class="operation-scenario-desc">先查询客户避免重复建档，再补充基础信息、顾问和进店渠道。</div>
+          <div class="operation-shots">
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/08-customer-search.jpg" target="_blank" title="点击查看大图：客户查询">
+                <img src="RTB业务流程图_精简优化版_assets/08-customer-search.jpg" alt="客户查询页面" loading="lazy">
+              </a>
+              <div class="operation-shot-label">客户查询</div>
+            </div>
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/09-customer-create.jpg" target="_blank" title="点击查看大图：新增客户">
+                <img src="RTB业务流程图_精简优化版_assets/09-customer-create.jpg" alt="新增客户档案页面" loading="lazy">
+              </a>
+              <div class="operation-shot-label">新增客户</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="operation-scenario">
+          <div class="operation-scenario-head">
+            <span class="operation-scenario-num" style="background:var(--accent-purple);">2</span>
+            <div class="operation-scenario-title">新客开卡</div>
+          </div>
+          <div class="operation-scenario-desc">为新客选择适配卡型，完成支付开卡并将会员资产沉淀到客户档案。</div>
+          <div class="operation-shots is-three">
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/10-card-select.jpg" target="_blank" title="点击查看大图：选择会员卡">
+                <img src="RTB业务流程图_精简优化版_assets/10-card-select.jpg" alt="选择会员卡页面" loading="lazy">
+              </a>
+              <div class="operation-shot-label">选择卡型</div>
+            </div>
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/11-card-payment.jpg" target="_blank" title="点击查看大图：开卡支付成功">
+                <img src="RTB业务流程图_精简优化版_assets/11-card-payment.jpg" alt="开卡支付成功页面" loading="lazy">
+              </a>
+              <div class="operation-shot-label">支付开卡</div>
+            </div>
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/12-card-success.jpg" target="_blank" title="点击查看大图：查看会员卡">
+                <img src="RTB业务流程图_精简优化版_assets/12-card-success.jpg" alt="客户会员卡资产页面" loading="lazy">
+              </a>
+              <div class="operation-shot-label">资产沉淀</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="operation-scenario">
+          <div class="operation-scenario-head">
+            <span class="operation-scenario-num" style="background:var(--accent-green);">3</span>
+            <div class="operation-scenario-title">服务沉淀</div>
+          </div>
+          <div class="operation-scenario-desc">首次服务后记录项目、服务日记和效果信息，形成可持续复用的客户偏好。</div>
+          <div class="operation-shots">
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/13-log-create.jpg" target="_blank" title="点击查看大图：新增服务日志">
+                <img src="RTB业务流程图_精简优化版_assets/13-log-create.jpg" alt="新增服务日志页面" loading="lazy">
+              </a>
+              <div class="operation-shot-label">新增日志</div>
+            </div>
+            <div class="operation-shot">
+              <a href="RTB业务流程图_精简优化版_assets/14-log-view.jpg" target="_blank" title="点击查看大图：查看服务日志">
+                <img src="RTB业务流程图_精简优化版_assets/14-log-view.jpg" alt="查看客户服务日志" loading="lazy">
+              </a>
+              <div class="operation-shot-label">查看日志</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="scene-tab-panel" data-scene-panel="member-existing">
+      <div class="section-title">场景二：老客户持续运营与增值</div>
+      <div class="scene-timeline">
+        <div class="scene-node">
+          <div class="scene-node-title">客户再次预约到店</div>
+          <div class="scene-node-desc">再次预约后，门店调取历史档案</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">查看历史偏好</span>
+            <span class="scene-action">查看上次服务日志</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">服务前：查看客户资产与权益</div>
+          <div class="scene-node-desc">查看卡券、消费与偏好，针对性推荐</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">查看会员卡</span>
+            <span class="scene-action">查看优惠券</span>
+            <span class="scene-action">查看消费记录</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">服务中：开单 + 使用优惠券/会员卡抵扣</div>
+          <div class="scene-node-desc">使用卡券权益结算并同步余额</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">优惠券抵扣</span>
+            <span class="scene-action">储值卡扣款</span>
+            <span class="scene-action">次卡核销</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">服务后：更新服务日志 & 动态标签</div>
+          <div class="scene-node-desc">记录服务结果并更新动态标签</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">更新服务日志</span>
+            <span class="scene-action">调整客户标签</span>
+            <span class="scene-action">标记待回访</span>
+          </div>
+        </div>
+        <div class="scene-node complete">
+          <div class="scene-node-title">长期未消费 → 流失预警 → 营销召回</div>
+          <div class="scene-node-desc">识别沉默客户，触发发券、短信或回访</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">流失预警</span>
+            <span class="scene-action">批量发券</span>
+            <span class="scene-action">短信召回</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="scene-tab-panel" data-scene-panel="member-assets">
+      <div class="section-title">场景三：客户资产办理流程</div>
+      <div class="scene-timeline">
+        <div class="scene-node">
+          <div class="scene-node-title">识别办卡时机</div>
+          <div class="scene-node-desc">消费后推荐，或响应客户主动咨询</div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">选择会员卡类型</div>
+          <div class="scene-node-desc">选择储值卡、次卡或权益卡</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">储值卡</span>
+            <span class="scene-action">次卡</span>
+            <span class="scene-action">权益卡</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">为客户办理开卡</div>
+          <div class="scene-node-desc">选择卡类型并确认开卡</div>
+        </div>
+        <div class="scene-node complete">
+          <div class="scene-node-title">后续消费自动扣减/核销</div>
+          <div class="scene-node-desc">消费时核销权益并同步余额与状态</div>
+        </div>
+      </div>
+      </div>
+
+      <div class="capability-status member-capability-status">
+        <div class="capability-status-header">
+          <div class="capability-status-title">会员运营能力现状</div>
+          <span class="capability-status-badge">基础能力已具备</span>
+        </div>
+        <div class="member-status-summary">目前已具备“建档、开卡、服务记录”的基础能力，但各功能之间还需要进一步联动。下一阶段应从“记录客户资产”升级为“根据客户状态自动产生运营动作”，重点打通服务日志、客户标签、回访任务和复购之间的闭环。</div>
+        <div class="capability-gap">
+          <div class="capability-gap-title">当前问题：服务日志缺少结构化沉淀</div>
+          <div class="capability-gap-text">纯文本日志虽然灵活，但容易出现员工忘记填写、内容过于简单、不同员工记录标准不一致、无法形成结构化客户标签，以及后续员工难以快速获取重点信息等问题。</div>
+        </div>
+        <div class="structured-log-title">建议采用“结构化字段＋补充文本”</div>
+        <div class="structured-fields">
+          <span class="structured-field">本次项目</span>
+          <span class="structured-field">使用产品</span>
+          <span class="structured-field">服务效果</span>
+          <span class="structured-field">客户偏好</span>
+          <span class="structured-field">注意事项</span>
+          <span class="structured-field">下次建议</span>
+          <span class="structured-field">建议回访时间</span>
+          <span class="structured-field">效果图片</span>
+          <span class="structured-field">补充备注</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 精准营销（场景流程） ====== -->
+    <div class="flow-panel" data-panel="marketing">
+      <div class="flow-stage">
+        <span class="stage-pill active">识别客群</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">选择工具</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">执行触达</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">客户响应</span>
+        <span class="stage-arrow">→</span>
+        <span class="stage-pill">效果追踪</span>
+      </div>
+
+      <div class="scene-tabs" data-scene-tabs="marketing">
+        <button class="scene-tab active" data-scene-target="marketing-single">单客精准营销</button>
+        <button class="scene-tab" data-scene-target="marketing-batch">批量标签营销</button>
+        <button class="scene-tab" data-scene-target="marketing-example">完整链路示例</button>
+      </div>
+
+      <div class="scene-tab-panel active" data-scene-panel="marketing-single">
+      <div class="section-title">场景一：单点精准营销（面向单个客户）</div>
+      <div class="marketing-chain">
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#eff6ff;color:var(--accent-blue);">1</span>
+          <span>识别客户价值</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#f5f3ff;color:var(--accent-purple);">2</span>
+          <span>选择营销动作</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#f0fdf4;color:var(--accent-green);">3</span>
+          <span>即时触达客户</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#fff7ed;color:var(--accent-orange);">4</span>
+          <span>客户到店转化</span>
+        </div>
+      </div>
+      <div class="scene-timeline">
+        <div class="scene-node">
+          <div class="scene-node-title">在客户详情页识别营销机会</div>
+          <div class="scene-node-desc">结合消费、资产与标签判断营销机会</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">高消费无卡 → 推荐办卡</span>
+            <span class="scene-action">生日临近 → 发放生日券</span>
+            <span class="scene-action">长期未到店 → 发券召回</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">执行单点营销动作</div>
+          <div class="scene-node-desc">在客户详情页选择办卡或发券</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">点击「办卡」→ 选择卡类型 → 确认办理</span>
+            <span class="scene-action">点击「发券」→ 选择优惠券 → 确认发放</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">客户接收权益 → 小程序查看</div>
+          <div class="scene-node-desc">客户查看到账权益并预约使用</div>
+        </div>
+        <div class="scene-node complete">
+          <div class="scene-node-title">到店消费 → 权益核销 → 记录转化</div>
+          <div class="scene-node-desc">到店结算时核销权益并记录转化</div>
+        </div>
+      </div>
+      <div class="appointment-gallery">
+        <div class="appointment-gallery-title">单客发券页面 · 流程示例</div>
+        <div class="appointment-shots">
+          <div class="appointment-shot">
+            <a href="RTB业务流程图_精简优化版_assets/15-single-customer.jpg" target="_blank" title="点击查看大图：识别客户营销机会">
+              <img src="RTB业务流程图_精简优化版_assets/15-single-customer.jpg" alt="查看客户消费与资产信息" loading="lazy">
+            </a>
+            <div class="appointment-shot-label"><span>1</span>识别客户</div>
+          </div>
+          <div class="appointment-shot">
+            <a href="RTB业务流程图_精简优化版_assets/16-single-coupon.jpg" target="_blank" title="点击查看大图：选择优惠券">
+              <img src="RTB业务流程图_精简优化版_assets/16-single-coupon.jpg" alt="选择适合客户的优惠券" loading="lazy">
+            </a>
+            <div class="appointment-shot-label"><span>2</span>选择优惠券</div>
+          </div>
+          <div class="appointment-shot">
+            <a href="RTB业务流程图_精简优化版_assets/17-single-success.jpg" target="_blank" title="点击查看大图：发券成功">
+              <img src="RTB业务流程图_精简优化版_assets/17-single-success.jpg" alt="客户优惠券到账" loading="lazy">
+            </a>
+            <div class="appointment-shot-label"><span>3</span>发券到账</div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="scene-tab-panel" data-scene-panel="marketing-batch">
+      <div class="section-title">场景二：批量标签营销（面向客群）</div>
+      <div class="marketing-chain">
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#eff6ff;color:var(--accent-blue);">1</span>
+          <span>标签筛选客群</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#fef2f2;color:var(--accent-red);">2</span>
+          <span>创建营销内容</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#f5f3ff;color:var(--accent-purple);">3</span>
+          <span>批量触达执行</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-icon" style="background:#f0fdf4;color:var(--accent-green);">4</span>
+          <span>数据追踪复盘</span>
+        </div>
+      </div>
+      <div class="scene-timeline">
+        <div class="scene-node">
+          <div class="scene-node-title">多维度筛选目标客群</div>
+          <div class="scene-node-desc">按活跃度、会员卡、顾问、渠道与标签圈选</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">90天未消费</span>
+            <span class="scene-action">持卡客户</span>
+            <span class="scene-action">重点客户标签</span>
+            <span class="scene-action">指定顾问名下</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">创建营销素材</div>
+          <div class="scene-node-desc">配置优惠券、短信或会员卡权益</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">创建优惠券</span>
+            <span class="scene-action">编辑短信内容</span>
+            <span class="scene-action">配置卡权益</span>
+          </div>
+        </div>
+        <div class="scene-node">
+          <div class="scene-node-title">批量执行触达</div>
+          <div class="scene-node-desc">批量发券、发短信或推送办卡邀请</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">批量发券</span>
+            <span class="scene-action">群发短信</span>
+            <span class="scene-action">办卡邀请</span>
+          </div>
+        </div>
+        <div class="scene-node complete">
+          <div class="scene-node-title">追踪转化效果 & 复盘优化</div>
+          <div class="scene-node-desc">复盘领取、核销、到店与办卡转化</div>
+          <div class="scene-node-actions">
+            <span class="scene-action">领取统计</span>
+            <span class="scene-action">核销统计</span>
+            <span class="scene-action">到店转化</span>
+          </div>
+        </div>
+      </div>
+      <div class="appointment-gallery">
+        <div class="appointment-gallery-title">客群批量营销页面 · 流程示例</div>
+        <div class="appointment-shots">
+          <div class="appointment-shot">
+            <a href="RTB业务流程图_精简优化版_assets/18-group-list.jpg" target="_blank" title="点击查看大图：客户群组管理">
+              <img src="RTB业务流程图_精简优化版_assets/18-group-list.jpg" alt="客户群组管理页面" loading="lazy">
+            </a>
+            <div class="appointment-shot-label"><span>1</span>管理客群</div>
+          </div>
+          <div class="appointment-shot">
+            <a href="RTB业务流程图_精简优化版_assets/19-group-filter.jpg" target="_blank" title="点击查看大图：筛选目标客群">
+              <img src="RTB业务流程图_精简优化版_assets/19-group-filter.jpg" alt="多条件筛选目标客户" loading="lazy">
+            </a>
+            <div class="appointment-shot-label"><span>2</span>筛选目标客群</div>
+          </div>
+          <div class="appointment-shot">
+            <a href="RTB业务流程图_精简优化版_assets/20-group-outreach.jpg" target="_blank" title="点击查看大图：批量触达">
+              <img src="RTB业务流程图_精简优化版_assets/20-group-outreach.jpg" alt="对客户群批量发券或发送短信" loading="lazy">
+            </a>
+            <div class="appointment-shot-label"><span>3</span>批量触达</div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="scene-tab-panel" data-scene-panel="marketing-example">
+      <div class="section-title">场景三：精准拓客完整链路示例</div>
+      <div style="padding: 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface);">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span class="badge badge-blue">筛选：90天未消费 + 高消费标签</span>
+          <span style="color:var(--text-quaternary);font-weight:600;">→</span>
+          <span class="badge badge-red">创建：护理抵扣券 ¥30</span>
+          <span style="color:var(--text-quaternary);font-weight:600;">→</span>
+          <span class="badge badge-purple">群发：短信召回 + 券到账通知</span>
+          <span style="color:var(--text-quaternary);font-weight:600;">→</span>
+          <span class="badge badge-green">客户小程序预约到店</span>
+          <span style="color:var(--text-quaternary);font-weight:600;">→</span>
+          <span class="badge badge-orange">到店服务 + 推荐办卡</span>
+          <span style="color:var(--text-quaternary);font-weight:600;">→</span>
+          <span class="badge badge-gray">资产沉淀 + 复购追踪</span>
+        </div>
+        <div class="scene-timeline" style="padding-left: 20px;">
+          <div class="scene-node warn">
+            <div class="scene-node-title">Step 1：识别沉默高价值客户</div>
+            <div class="scene-node-desc">组合「90天未消费」与「高消费」标签圈选</div>
+          </div>
+          <div class="scene-node">
+            <div class="scene-node-title">Step 2：设计召回权益</div>
+            <div class="scene-node-desc">配置满199减30元、30天有效的护理券</div>
+          </div>
+          <div class="scene-node">
+            <div class="scene-node-title">Step 3：批量触达</div>
+            <div class="scene-node-desc">批量发券并同步发送到账短信</div>
+          </div>
+          <div class="scene-node active">
+            <div class="scene-node-title">Step 4：客户响应与到店</div>
+            <div class="scene-node-desc">客户查看优惠券并预约项目与时间</div>
+          </div>
+          <div class="scene-node complete">
+            <div class="scene-node-title">Step 5：到店转化与资产沉淀</div>
+            <div class="scene-node-desc">到店核销，顾问推荐办卡，沉淀长期价值</div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="section-title">核心营销工具支撑</div>
+      <div class="tool-matrix">
+        <div class="tool-card">
+          <h4>会员卡管理</h4>
+          <p>配置储值卡、次卡或权益卡，支持开卡与消费核销。</p>
+        </div>
+        <div class="tool-card">
+          <h4>优惠券管理</h4>
+          <p>配置券类型、门槛与有效期，支持发放和核销。</p>
+        </div>
+        <div class="tool-card">
+          <h4>短信触达</h4>
+          <p>按标签筛选客户，批量发送营销、回访或活动通知。</p>
+        </div>
+        <div class="tool-card">
+          <h4>预约设置</h4>
+          <p>配置预约开关、确认方式、可约时段与取消规则。</p>
+        </div>
+      </div>
+
+      <div class="capability-status marketing-capability-status">
+        <div class="capability-status-header">
+          <div class="capability-status-title">精准营销能力现状</div>
+          <span class="capability-status-badge">基础能力完成度约 70%</span>
+        </div>
+        <div class="marketing-priority-grid">
+          <div class="marketing-priority">
+            <div class="marketing-priority-title">P0｜基础能力</div>
+            <div class="marketing-priority-text">已具备客户筛选、优惠券、短信及卡券触达能力。<br><strong>主要缺口：手动客户标签功能仍为半成品。</strong></div>
+          </div>
+          <div class="marketing-priority">
+            <div class="marketing-priority-title">P1｜营销闭环能力缺失</div>
+            <div class="marketing-priority-text">门店有营销意愿，但当前系统仍以发券、短信等执行工具为主，尚未形成完整的营销闭环。</div>
+            <div class="marketing-question-grid">
+              <div class="marketing-question"><b>Who｜营销给谁</b>客户结构不清晰，难以准确识别目标客群。</div>
+              <div class="marketing-question"><b>How｜如何营销</b>缺少策略指导，不清楚营销时机、触达方式和权益方案。</div>
+              <div class="marketing-question"><b>Result｜效果如何</b>缺少到店、核销与消费转化数据，活动无法有效复盘。</div>
+            </div>
+          </div>
+        </div>
+        <div class="marketing-next"><b>下一阶段：</b>完善客户标签 → 识别目标客群 → 推荐营销策略 → 执行触达 → 追踪转化 → 复盘优化。<br>先补齐客户标签基础能力，再解决门店“营销给谁、怎么营销、效果如何”三个核心问题。</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.flow-panel > .capability-status').forEach(card => {
+      card.parentElement.prepend(card);
+    });
+
+    document.querySelectorAll('.flow-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.flow-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.tab;
+        document.querySelectorAll('.flow-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector('[data-panel="' + target + '"]').classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('[data-scene-tabs]').forEach(tabGroup => {
+      tabGroup.querySelectorAll('.scene-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const scope = tab.closest('.flow-panel');
+          tabGroup.querySelectorAll('.scene-tab').forEach(item => item.classList.remove('active'));
+          tab.classList.add('active');
+          scope.querySelectorAll('.scene-tab-panel').forEach(panel => panel.classList.remove('active'));
+          scope.querySelector('[data-scene-panel="' + tab.dataset.sceneTarget + '"]').classList.add('active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
