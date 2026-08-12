@@ -177,12 +177,18 @@
     .step-line { width: 1.5px; height: 18px; background: var(--border); margin-left: 12px; margin-bottom: 4px; }
     .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .split-card {
+      display: grid;
+      grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.28fr);
+      grid-auto-flow: row;
+      column-gap: 18px;
+      align-content: start;
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 18px;
       background: var(--surface);
     }
     .split-header {
+      grid-column: 1 / -1;
       font-size: 15px;
       font-weight: 600;
       margin-bottom: 14px;
@@ -190,10 +196,21 @@
       border-bottom: 1px solid var(--border);
       color: var(--text-primary);
     }
+    .split-card > .flow-step,
+    .split-card > .step-line { grid-column: 1; }
     .appointment-gallery {
       margin-top: 18px;
       padding-top: 16px;
       border-top: 1px solid var(--border);
+    }
+    .split-card > .appointment-gallery {
+      grid-column: 2;
+      grid-row: 2 / span 12;
+      align-self: stretch;
+      margin-top: 0;
+      padding: 2px 0 0 18px;
+      border-top: 0;
+      border-left: 1px solid var(--border);
     }
     .appointment-gallery-title {
       margin-bottom: 12px;
@@ -207,10 +224,10 @@
       gap: 18px;
     }
     .appointment-shots.is-four {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 14px;
     }
-    .appointment-shots.is-four .appointment-shot:not(:last-child)::after { right: -11px; }
+    .appointment-shots.is-four .appointment-shot:not(:last-child)::after { display: none; }
     .appointment-shot {
       position: relative;
       min-width: 0;
@@ -489,6 +506,33 @@
       line-height: 1.4;
       text-align: center;
     }
+    .evidence-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.22fr);
+      gap: 20px;
+      align-items: start;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+    .evidence-column { min-width: 0; }
+    .evidence-column + .evidence-column {
+      padding-left: 20px;
+      border-left: 1px solid var(--border);
+    }
+    .evidence-column .section-title { margin-top: 0; }
+    .evidence-layout .operation-scenarios {
+      grid-template-columns: 1fr;
+      margin-bottom: 0;
+    }
+    .evidence-layout .operation-scenario { padding: 14px; }
+    .evidence-layout .operation-scenario-desc { min-height: 0; }
+    .evidence-layout .appointment-gallery {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
     .tool-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
     .tool-card {
       padding: 16px;
@@ -602,11 +646,24 @@
     .chain-arrow { color: var(--text-quaternary); font-size: 14px; font-weight: 600; }
     @media (max-width: 720px) {
       .split-view { grid-template-columns: 1fr; }
+      .split-card { display: block; }
+      .evidence-layout { grid-template-columns: 1fr; padding: 16px; }
+      .evidence-column + .evidence-column {
+        padding: 18px 0 0;
+        border-left: 0;
+        border-top: 1px solid var(--border);
+      }
       .flow-grid { grid-template-columns: 1fr; }
       body { padding: 16px 12px; }
       .header h1 { font-size: 18px; }
       .marketing-chain { justify-content: flex-start; }
       .appointment-shots { grid-template-columns: 1fr; gap: 14px; }
+      .appointment-gallery {
+        margin-top: 18px;
+        padding: 16px 0 0;
+        border-top: 1px solid var(--border);
+        border-left: 0;
+      }
       .appointment-shot:not(:last-child)::after { display: none; }
       .appointment-shot img { aspect-ratio: auto; }
       .capability-status-header { align-items: flex-start; flex-direction: column; }
@@ -1009,6 +1066,8 @@
       </div>
 
       <div class="scene-tab-panel active" data-scene-panel="member-new">
+      <div class="evidence-layout">
+      <div class="evidence-column">
       <div class="section-title">场景一：新客户首次到店全链路</div>
       <div class="scene-timeline">
         <div class="scene-node active">
@@ -1059,9 +1118,11 @@
         </div>
       </div>
 
-      <div class="section-title">新客运营 · 三个子场景</div>
+      </div>
+      <div class="evidence-column">
+      <div class="section-title member-subscene-title">新客运营 · 三个子场景</div>
       <div class="operation-scenarios">
-        <div class="operation-scenario">
+        <div class="operation-scenario" data-member-operation="profile">
           <div class="operation-scenario-head">
             <span class="operation-scenario-num">1</span>
             <div class="operation-scenario-title">新客建档</div>
@@ -1083,12 +1144,12 @@
           </div>
         </div>
 
-        <div class="operation-scenario">
+        <div class="operation-scenario" data-member-operation="card">
           <div class="operation-scenario-head">
             <span class="operation-scenario-num" style="background:var(--accent-purple);">2</span>
-            <div class="operation-scenario-title">新客开卡</div>
+            <div class="operation-scenario-title">客户开卡</div>
           </div>
-          <div class="operation-scenario-desc">为新客选择适配卡型，完成支付开卡并将会员资产沉淀到客户档案。</div>
+          <div class="operation-scenario-desc">为客户选择适配卡型，完成支付开卡并将会员资产沉淀到客户档案。</div>
           <div class="operation-shots is-three">
             <div class="operation-shot">
               <a href="RTB业务流程图_精简优化版_assets/10-card-select.jpg" target="_blank" title="点击查看大图：选择会员卡">
@@ -1111,7 +1172,7 @@
           </div>
         </div>
 
-        <div class="operation-scenario">
+        <div class="operation-scenario" data-member-operation="service">
           <div class="operation-scenario-head">
             <span class="operation-scenario-num" style="background:var(--accent-green);">3</span>
             <div class="operation-scenario-title">服务沉淀</div>
@@ -1132,6 +1193,8 @@
             </div>
           </div>
         </div>
+      </div>
+      </div>
       </div>
       </div>
 
@@ -1258,6 +1321,8 @@
       </div>
 
       <div class="scene-tab-panel active" data-scene-panel="marketing-single">
+      <div class="evidence-layout">
+      <div class="evidence-column">
       <div class="section-title">场景一：单点精准营销（面向单个客户）</div>
       <div class="marketing-chain">
         <div class="chain-step">
@@ -1307,6 +1372,8 @@
           <div class="scene-node-desc">到店结算时核销权益并记录转化</div>
         </div>
       </div>
+      </div>
+      <div class="evidence-column">
       <div class="appointment-gallery">
         <div class="appointment-gallery-title">单客发券页面 · 流程示例</div>
         <div class="appointment-shots">
@@ -1331,8 +1398,12 @@
         </div>
       </div>
       </div>
+      </div>
+      </div>
 
       <div class="scene-tab-panel" data-scene-panel="marketing-batch">
+      <div class="evidence-layout">
+      <div class="evidence-column">
       <div class="section-title">场景二：批量标签营销（面向客群）</div>
       <div class="marketing-chain">
         <div class="chain-step">
@@ -1394,6 +1465,8 @@
           </div>
         </div>
       </div>
+      </div>
+      <div class="evidence-column">
       <div class="appointment-gallery">
         <div class="appointment-gallery-title">客群批量营销页面 · 流程示例</div>
         <div class="appointment-shots">
@@ -1416,6 +1489,8 @@
             <div class="appointment-shot-label"><span>3</span>批量触达</div>
           </div>
         </div>
+      </div>
+      </div>
       </div>
       </div>
 
@@ -1509,6 +1584,35 @@
     document.querySelectorAll('.flow-panel > .capability-status').forEach(card => {
       card.parentElement.prepend(card);
     });
+
+    const memberNewPanel = document.querySelector('[data-scene-panel="member-new"]');
+    const memberExistingPanel = document.querySelector('[data-scene-panel="member-existing"]');
+    const memberAssetsPanel = document.querySelector('[data-scene-panel="member-assets"]');
+    const memberSubsceneTitle = memberNewPanel?.querySelector('.member-subscene-title');
+    const memberCardOperation = memberNewPanel?.querySelector('[data-member-operation="card"]');
+    const memberServiceOperation = memberNewPanel?.querySelector('[data-member-operation="service"]');
+    memberSubsceneTitle?.remove();
+    const addMemberEvidence = (panel, operation, title) => {
+      if (!panel || !operation) return;
+      const layout = document.createElement('div');
+      layout.className = 'evidence-layout';
+      const flow = document.createElement('div');
+      flow.className = 'evidence-column';
+      const pages = document.createElement('div');
+      pages.className = 'evidence-column';
+      const pagesTitle = document.createElement('div');
+      pagesTitle.className = 'section-title';
+      pagesTitle.textContent = title;
+      const operations = document.createElement('div');
+      operations.className = 'operation-scenarios';
+      Array.from(panel.children).forEach(child => flow.appendChild(child));
+      operations.appendChild(operation);
+      pages.append(pagesTitle, operations);
+      layout.append(flow, pages);
+      panel.appendChild(layout);
+    };
+    addMemberEvidence(memberExistingPanel, memberServiceOperation, '服务沉淀页面 · 流程示例');
+    addMemberEvidence(memberAssetsPanel, memberCardOperation, '客户开卡页面 · 流程示例');
 
     document.querySelectorAll('.flow-tab').forEach(tab => {
       tab.addEventListener('click', () => {
